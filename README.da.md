@@ -28,11 +28,17 @@ Genesys giver ikke en indlejret app adgang til selve UI'ets token, så "org'ens 
 - Scope: `analytics:readonly`, `routing:readonly`, `organization:readonly`, `users:readonly` (eller ingen scopes, så gælder brugerens fulde rettigheder)
 
 **3. Integration** (Admin → Integrations → + Integrations → **Client Application**):
+
+> Vælg **Client Application**, ikke *Interaction Widget*. En Interaction Widget er bundet til en samtale: den vises kun ved siden af en aktiv interaktion og får en ny instans pr. samtale. En Client Application er altid tilgængelig, også uden for samtaler.
+
 - *Application URL*:
   ```
   https://skndkprivat.github.io/genesys-traffic-widget/?clientId=<CLIENT-ID>&gcHostOrigin={{gcHostOrigin}}&gcTargetEnv={{gcTargetEnv}}&gcLangTag={{gcLangTag}}
   ```
-- *Application Type*: `standalone` (vises under *Apps*-menuen) eller `widget`, hvis den skal ligge i agentens sidepanel
+- *Application Type*:
+  - `standalone` (anbefalet): fylder hele Genesys-vinduet, så diagrammet er lettest at læse. Åbnes fra *Apps*-menuen, eller fra *Performance* / *Directory* afhængigt af *Application Category*. Med *Performance* ligger den ved siden af Genesys' egne dashboards
+  - `widget`: en fane i venstre sidepanel (Apps-ikonet), altid tilgængelig og ikke bundet til en samtale. Her bruges det kompakte, smalle layout
+  - Du kan oprette begge som to Client Application-integrationer med samme URL og samme OAuth-klient
 - *Iframe Sandbox Options*: `allow-scripts,allow-same-origin,allow-forms,allow-modals,allow-downloads,allow-popups`
 - *Group Filtering*: begræns evt. til en gruppe, fx supervisorer
 - Slå integrationen **Active**
