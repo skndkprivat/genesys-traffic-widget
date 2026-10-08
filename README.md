@@ -3,6 +3,8 @@
 Traffic-visningen fra Flow-diagram-tool som en selvstændig widget, der kører **inde i Genesys Cloud**.
 Opkald afspilles som prikker, der løber *indgangspunkt → Architect-flow → kø*. Blå betyder, at nogen tog opkaldet, og rød betyder, at det endte uden samtale.
 
+![Traffic-widget'en med demodata: bredt layout til venstre, smalt sidepanel til højre](docs/traffic-widget.png)
+
 Widget'en logger ind med **den Genesys-org, den bliver vist i**, og med **den bruger, der er logget ind**. Der er ingen server, ingen client secret og ingen kundeliste. Tokenet har kun brugerens egne rettigheder.
 
 ## Sådan virker login
