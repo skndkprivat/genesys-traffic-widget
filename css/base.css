@@ -1,0 +1,57 @@
+/* Light by default (matches the Genesys Cloud UI); dark follows the OS, or ?theme=dark|light. */
+:root {
+  --bg:#f4f5f7; --bg-2:#ffffff; --panel:#f0f2f5; --panel-2:#e4e7ec;
+  --border:#d5d9e0; --border-hi:#b6bcc6;
+  --ink:#1f2933; --ink-dim:#4f5b67; --ink-faint:#7b8794;
+  --accent:#2a60c8; --accent-hi:#3b74df; --accent-ink:#ffffff;
+  --good:#2e8540; --bad:#c0392b;
+  --font: Roboto, "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#16191d; --bg-2:#1d2126; --panel:#242930; --panel-2:#2c323a;
+    --border:#353c45; --border-hi:#48515c;
+    --ink:#e6e9ed; --ink-dim:#a9b2bc; --ink-faint:#7a838d;
+    --accent:#5b8def; --accent-hi:#79a3f3; --accent-ink:#0d1420;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#16191d; --bg-2:#1d2126; --panel:#242930; --panel-2:#2c323a;
+  --border:#353c45; --border-hi:#48515c;
+  --ink:#e6e9ed; --ink-dim:#a9b2bc; --ink-faint:#7a838d;
+  --accent:#5b8def; --accent-hi:#79a3f3; --accent-ink:#0d1420;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font); font-size: 13px; line-height: 1.45;
+  display: flex; flex-direction: column; padding: 8px;
+}
+button { font-family: inherit; font-size: inherit; cursor: pointer; }
+button:disabled { opacity: .55; cursor: default; }
+
+.btn { background: var(--panel); border: 1px solid var(--border); color: var(--ink); padding: 6px 12px; border-radius: 6px; font-size: 12px; }
+.btn:hover { background: var(--panel-2); border-color: var(--border-hi); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { background: var(--accent-hi); border-color: var(--accent-hi); }
+.btn.ghost { background: transparent; }
+
+.traffic { flex: 1; display: flex; flex-direction: column; gap: 10px; min-height: 0; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+.tr-who { color: var(--ink-faint); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40ch; }
+
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--panel-2); border: 1px solid var(--border-hi); color: var(--ink); padding: 10px 18px; border-radius: 6px; font-size: 12px; opacity: 0; pointer-events: none; transition: all .25s; z-index: 100; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.ok { border-color: var(--good); }
+.toast.err { border-color: var(--bad); }
+
+/* Start-up / setup screens */
+.notice { margin: auto; max-width: 720px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; }
+.notice h2 { margin: 0 0 8px; font-size: 16px; }
+.notice code, .notice pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12px; }
+.notice pre { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; white-space: pre-wrap; word-break: break-all; }
+.notice ul { padding-left: 18px; }

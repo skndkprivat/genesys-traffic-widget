@@ -1,0 +1,11 @@
+{
+  "name": "genesys-traffic-widget",
+  "version": "1.0.0",
+  "description": "Traffic view (calls flowing entry point -> Architect flow -> queue) as a Genesys Cloud Client Application widget",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node serve.js",
+    "test": "node --test test/traffic.test.js test/auth.test.js"
+  }
+}
