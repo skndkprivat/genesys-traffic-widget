@@ -54,7 +54,7 @@ Each org needs its own OAuth client and integration. The code and the hosting ar
 | `clientId` | OAuth client ID in the current org (required) |
 | `gcHostOrigin` / `pcEnvironment` / `region` | Sets the region. Only known Genesys domains are accepted |
 | `gcLangTag` / `lang` | Language: da, en, fr, es or nl (otherwise English) |
-| `theme` | `light` or `dark` (otherwise follows the operating system) |
+| `theme` | `light` or `dark` (otherwise follows the operating system). The ☾/☀ button in the toolbar overrides it and is remembered per browser |
 | `demo` | Shows demo data without sign-in, for trying it out outside Genesys |
 
 ## Trying it locally

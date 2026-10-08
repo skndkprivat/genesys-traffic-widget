@@ -30,7 +30,10 @@ const lang = (() => { const l = (ctx.lang || navigator.language || 'en').slice(0
 const t = key => W[lang]?.[key] ?? I18N[lang]?.[key] ?? W.en[key] ?? I18N.en[key] ?? key;
 
 document.documentElement.lang = lang;
-if (ctx.theme === 'dark' || ctx.theme === 'light') document.documentElement.dataset.theme = ctx.theme;
+// The theme picked with the toolbar button wins, then ?theme, then the OS setting.
+const savedTheme = (() => { try { return localStorage.getItem('tw-theme'); } catch { return null; } })();
+const theme = [savedTheme, ctx.theme].find(v => v === 'dark' || v === 'light');
+if (theme) document.documentElement.dataset.theme = theme;
 
 const root = document.getElementById('root');
 const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));

@@ -299,6 +299,7 @@ export function initTraffic(root, i18n, toast, opts = {}) {
       <label class="btn primary tr-upload">${i18n('trafficLoad')}<input type="file" accept=".json,application/json" multiple hidden data-tr="file" /></label>
       <button class="btn" data-tr="paste">${i18n('trafficPaste')}</button>
       <button class="btn ghost" data-tr="help" title="${i18n('trafficHelpTitle')}">?</button>
+      <button class="btn ghost" data-tr="theme"></button>
       <span class="tr-spacer"></span>
       <span class="tr-who" data-tr="who"></span>
     </div></div>
@@ -838,6 +839,24 @@ export function initTraffic(root, i18n, toast, opts = {}) {
     draw(ts); drawChart();
   }
   requestAnimationFrame(frame);
+
+  // Theme toggle: the choice is kept per browser and wins over ?theme and the OS setting.
+  // The canvases read the CSS colours every frame, so they follow without a redraw.
+  const darkNow = () => (document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark';
+  function themeBtn() {
+    const dark = darkNow();
+    q('theme').textContent = dark ? '☀' : '☾';
+    q('theme').title = i18n(dark ? 'trafficThemeLight' : 'trafficThemeDark');
+    q('theme').setAttribute('aria-label', q('theme').title);
+  }
+  q('theme').addEventListener('click', () => {
+    const next = darkNow() ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('tw-theme', next); } catch { /* ignore */ }
+    themeBtn();
+  });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', themeBtn);
+  themeBtn();
 
   q('play').addEventListener('click', () => { if (!model) return; if (simT >= t1) seek(0); play(!playing); });
   q('restart').addEventListener('click', () => { if (model) { seek(0); play(true); } });

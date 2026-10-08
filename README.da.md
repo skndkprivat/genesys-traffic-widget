@@ -54,7 +54,7 @@ Hver org skal have sin egen OAuth-klient og integration. Koden og hostingen er d
 | `clientId` | OAuth client ID i den aktuelle org (påkrævet) |
 | `gcHostOrigin` / `pcEnvironment` / `region` | Bestemmer regionen. Kun kendte Genesys-domæner accepteres |
 | `gcLangTag` / `lang` | Sprog: da, en, fr, es eller nl (ellers engelsk) |
-| `theme` | `light` eller `dark` (ellers følges styresystemet) |
+| `theme` | `light` eller `dark` (ellers følges styresystemet). Knappen ☾/☀ i værktøjslinjen overstyrer det og huskes pr. browser |
 | `demo` | Viser demodata uden login, til afprøvning uden for Genesys |
 
 ## Lokal afprøvning
