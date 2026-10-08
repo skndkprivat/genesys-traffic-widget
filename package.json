@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "start": "node serve.js",
-    "test": "node --test test/traffic.test.js test/auth.test.js"
+    "test": "node --test test/traffic.test.js test/auth.test.js",
+    "screenshot": "node tools/screenshot.mjs"
   }
 }

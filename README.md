@@ -61,6 +61,14 @@ npm start
 npm test
 ```
 
+Skærmbilledet i README'en (`docs/traffic-widget.png`) kan tages igen efter ændringer:
+
+```bash
+npm run screenshot
+```
+
+Scriptet (`tools/screenshot.mjs`) starter sin egen lille server og en lokal Edge eller Chrome i headless-tilstand. Begge layouts vises side om side, midt i afspilningen af demodata. Kan browseren ikke findes, sætter du `BROWSER=<sti til msedge/chrome>`. `LANG_TAG=en` giver et engelsk billede.
+
 ## Forskelle fra Traffic i Flow-diagram-tool
 
 - Ingen kundeliste eller `.env`. Org'en og regionen kommer fra Genesys.
