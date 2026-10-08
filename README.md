@@ -20,13 +20,13 @@ Genesys giver ikke en indlejret app adgang til selve UI'ets token, så "org'ens 
 
 **2. OAuth-klient** (Admin → Integrations → OAuth → Add Client):
 - Grant type: **Code Authorization** (PKCE, uden secret)
-- Authorized redirect URI: widget'ens URL **uden query**, fx `https://din-host/traffic/`
+- Authorized redirect URI: widget'ens URL **uden query**, fx `https://skndkprivat.github.io/genesys-traffic-widget/`
 - Scope: `analytics:readonly`, `routing:readonly`, `organization:readonly`, `users:readonly` (eller ingen scopes, så gælder brugerens fulde rettigheder)
 
 **3. Integration** (Admin → Integrations → + Integrations → **Client Application**):
 - *Application URL*:
   ```
-  https://din-host/traffic/?clientId=<CLIENT-ID>&gcHostOrigin={{gcHostOrigin}}&gcTargetEnv={{gcTargetEnv}}&gcLangTag={{gcLangTag}}
+  https://skndkprivat.github.io/genesys-traffic-widget/?clientId=<CLIENT-ID>&gcHostOrigin={{gcHostOrigin}}&gcTargetEnv={{gcTargetEnv}}&gcLangTag={{gcLangTag}}
   ```
 - *Application Type*: `standalone` (vises under *Apps*-menuen) eller `widget`, hvis den skal ligge i agentens sidepanel
 - *Iframe Sandbox Options*: `allow-scripts,allow-same-origin,allow-forms,allow-modals,allow-downloads,allow-popups`
@@ -53,7 +53,7 @@ Hver org skal have sin egen OAuth-klient og integration. Koden og hostingen er d
 npm start
 ```
 
-Åbn `http://localhost:8080/?demo`. Login kan kun testes rigtigt fra en HTTPS-host via integrationen. Vil du teste uden for Genesys, kan du åbne `https://din-host/traffic/?clientId=…&region=mypurecloud.de` direkte i browseren.
+Åbn `http://localhost:8080/?demo`. Login kan kun testes rigtigt fra en HTTPS-host via integrationen. Vil du teste uden for Genesys, kan du åbne `https://skndkprivat.github.io/genesys-traffic-widget/?clientId=…&region=mypurecloud.de` direkte i browseren.
 
 ```bash
 npm test
