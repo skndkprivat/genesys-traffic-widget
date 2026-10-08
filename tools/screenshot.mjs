@@ -1,10 +1,12 @@
-// Takes the README screenshot (docs/traffic-widget.png): the widget with demo data, wide on the
-// left and as a narrow side panel on the right, part-way through the replay.
+// Takes the README screenshots: the widget with demo data, wide on the left and as a narrow
+// side panel on the right, part-way through the replay. One picture per language:
+// docs/traffic-widget.png (English, README.md) and docs/traffic-widget-da.png (Danish, README.da.md).
 //
 //   npm run screenshot
 //
 // Uses a locally installed Edge or Chrome in headless mode, driven over the DevTools protocol so
-// the animation runs in real time. Set BROWSER=<path to msedge/chrome> if it is not found.
+// the animation runs in real time. Set BROWSER=<path to msedge/chrome> if it is not found,
+// LANG_TAG=en (or da, fr, es, nl) for one language only.
 // No dependencies: a small static server is started for the duration of the run.
 import { spawn } from 'child_process';
 import { createServer } from 'http';
@@ -15,11 +17,11 @@ import { dirname, extname, join, normalize } from 'path';
 import { fileURLToPath } from 'url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const OUT = join(ROOT, 'docs', 'traffic-widget.png');
+const outFor = lang => join(ROOT, 'docs', lang === 'en' ? 'traffic-widget.png' : `traffic-widget-${lang}.png`);
 const WIDTH = 1626, HEIGHT = 902;
 const SEEK = 550;          // replay position (of 1000) to jump to once loaded
 const SETTLE_MS = 9000;    // real time to let dots flow before the picture is taken
-const LANG = process.env.LANG_TAG || 'da';
+const LANGS = process.env.LANG_TAG ? [process.env.LANG_TAG] : ['en', 'da'];
 
 const BROWSERS = [
   process.env.BROWSER,
@@ -32,13 +34,13 @@ const BROWSERS = [
 ].filter(Boolean);
 
 // Two frames of the widget side by side; once loaded, both jump part-way into the replay.
-const SHOT_PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>
+const shotPage = lang => `<!doctype html><html><head><meta charset="utf-8"><style>
 html,body{margin:0;background:#e9ecf1}
 .wrap{display:flex;gap:24px;padding:20px;align-items:flex-start}
 iframe{border:1px solid #c9ced6;border-radius:10px;background:#fff;box-shadow:0 6px 24px rgba(0,0,0,.12)}
 </style></head><body><div class="wrap">
-<iframe src="index.html?demo&theme=light&lang=${LANG}" width="1180" height="860"></iframe>
-<iframe src="index.html?demo&theme=light&lang=${LANG}" width="380" height="860"></iframe>
+<iframe src="index.html?demo&theme=light&lang=${lang}" width="1180" height="860"></iframe>
+<iframe src="index.html?demo&theme=light&lang=${lang}" width="380" height="860"></iframe>
 </div><script>
 document.querySelectorAll('iframe').forEach(fr => fr.addEventListener('load', () => setTimeout(() => {
   const s = fr.contentDocument.querySelector('[data-tr="seek"]');
@@ -55,7 +57,7 @@ if (!browser) { console.error('No Edge/Chrome found. Set BROWSER=<path>.'); proc
 
 const server = createServer(async (req, res) => {
   const path = new URL(req.url, 'http://x').pathname;
-  if (path === '/shot.html') { res.writeHead(200, { 'Content-Type': TYPES['.html'] }); res.end(SHOT_PAGE); return; }
+  if (path === '/shot.html') { res.writeHead(200, { 'Content-Type': TYPES['.html'] }); res.end(shotPage(new URL(req.url, 'http://x').searchParams.get('lang') || 'en')); return; }
   if (!ALLOWED.test(path)) { res.writeHead(404); res.end(); return; }
   try { res.writeHead(200, { 'Content-Type': TYPES[extname(path)] }); res.end(await readFile(join(ROOT, normalize(path)))); }
   catch { res.writeHead(404); res.end(); }
@@ -84,13 +86,16 @@ try {
 
   await send('Emulation.setDeviceMetricsOverride', { width: WIDTH, height: HEIGHT, deviceScaleFactor: 1, mobile: false });
   await send('Page.enable');
-  await send('Page.navigate', { url });
-  await sleep(SETTLE_MS);
-  const shot = await send('Page.captureScreenshot', { format: 'png' });
-  if (!shot.result?.data) throw new Error('Screenshot failed');
-  await mkdir(dirname(OUT), { recursive: true });
-  await writeFile(OUT, Buffer.from(shot.result.data, 'base64'));
-  console.log(`Saved ${OUT}`);
+  for (const lang of LANGS) {
+    await send('Page.navigate', { url: `${url}?lang=${encodeURIComponent(lang)}` });
+    await sleep(SETTLE_MS);
+    const shot = await send('Page.captureScreenshot', { format: 'png' });
+    if (!shot.result?.data) throw new Error('Screenshot failed');
+    const out = outFor(lang);
+    await mkdir(dirname(out), { recursive: true });
+    await writeFile(out, Buffer.from(shot.result.data, 'base64'));
+    console.log(`Saved ${out}`);
+  }
   ws.close();
 } finally {
   proc.kill();

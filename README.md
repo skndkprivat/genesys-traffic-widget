@@ -1,81 +1,83 @@
 # Genesys Traffic Widget
 
-Traffic-visningen fra Flow-diagram-tool som en selvstændig widget, der kører **inde i Genesys Cloud**.
-Opkald afspilles som prikker, der løber *indgangspunkt → Architect-flow → kø*. Blå betyder, at nogen tog opkaldet, og rød betyder, at det endte uden samtale.
+**English** · [Dansk](README.da.md)
 
-![Traffic-widget'en med demodata: bredt layout til venstre, smalt sidepanel til højre](docs/traffic-widget.png)
+The Traffic view from Flow-diagram-tool as a standalone widget that runs **inside Genesys Cloud**.
+Calls are replayed as dots flowing *entry point → Architect flow → queue*. Blue means somebody took the call, and red means it ended without a conversation.
 
-Widget'en logger ind med **den Genesys-org, den bliver vist i**, og med **den bruger, der er logget ind**. Der er ingen server, ingen client secret og ingen kundeliste. Tokenet har kun brugerens egne rettigheder.
+![The Traffic widget with demo data: wide layout on the left, narrow side panel on the right](docs/traffic-widget.png)
 
-## Sådan virker login
+The widget signs in with **the Genesys org it is shown in** and **the user who is signed in**. There is no server, no client secret and no customer list. The token only has the user's own permissions.
 
-1. Genesys Cloud åbner widget'en i en iframe med integrationens URL og udfylder `{{gcHostOrigin}}`, `{{gcLangTag}}` osv.
-2. Widget'en finder regionen ud fra `gcHostOrigin` (fx `https://apps.mypurecloud.de` → `mypurecloud.de`), eller fra `pcEnvironment`/`region`, hvis de er sat.
-3. Den starter OAuth *Authorization Code + PKCE* mod `login.<region>` med org'ens OAuth-klient (`clientId` i URL'en). Brugeren er allerede logget ind i Genesys Cloud, så loginnet går som regel igennem uden at spørge.
-4. Tokenet ligger kun i iframens `sessionStorage`. Data hentes direkte fra `api.<region>` (Analytics conversation details jobs plus kølisten).
+## How sign-in works
 
-Genesys giver ikke en indlejret app adgang til selve UI'ets token, så "org'ens credentials" betyder her en OAuth-klient i org'en plus brugerens eksisterende Genesys-session. Det er den måde, Genesys anbefaler.
+1. Genesys Cloud opens the widget in an iframe with the integration's URL and fills in `{{gcHostOrigin}}`, `{{gcLangTag}}` and so on.
+2. The widget works out the region from `gcHostOrigin` (e.g. `https://apps.mypurecloud.de` → `mypurecloud.de`), or from `pcEnvironment`/`region` if they are set.
+3. It starts OAuth *Authorization Code + PKCE* against `login.<region>` with the org's OAuth client (`clientId` in the URL). The user is already signed in to Genesys Cloud, so the sign-in usually completes without asking.
+4. The token is kept only in the iframe's `sessionStorage`. Data is fetched directly from `api.<region>` (Analytics conversation details jobs plus the queue list).
 
-## Opsætning i en Genesys-org
+Genesys does not give an embedded app access to the UI's own token, so "the org's credentials" here means an OAuth client in the org plus the user's existing Genesys session. This is the approach Genesys recommends.
 
-**1. Hosting.** Læg filerne (`index.html`, `css/`, `js/`) på en HTTPS-host, fx GitHub Pages, Azure Static Web Apps eller S3 + CloudFront. Genesys indlejrer kun HTTPS-sider. Én hosting kan bruges af alle org'er.
+## Setting it up in a Genesys org
 
-**2. OAuth-klient** (Admin → Integrations → OAuth → Add Client):
-- Grant type: **Code Authorization** (PKCE, uden secret)
-- Authorized redirect URI: widget'ens URL **uden query**, fx `https://skndkprivat.github.io/genesys-traffic-widget/`
-- Scope: `analytics:readonly`, `routing:readonly`, `organization:readonly`, `users:readonly` (eller ingen scopes, så gælder brugerens fulde rettigheder)
+**1. Hosting.** Put the files (`index.html`, `css/`, `js/`) on an HTTPS host, e.g. GitHub Pages, Azure Static Web Apps or S3 + CloudFront. Genesys only embeds HTTPS pages. One hosting can serve every org.
+
+**2. OAuth client** (Admin → Integrations → OAuth → Add Client):
+- Grant type: **Code Authorization** (PKCE, no secret)
+- Authorized redirect URI: the widget's URL **without a query**, e.g. `https://skndkprivat.github.io/genesys-traffic-widget/`
+- Scope: `analytics:readonly`, `routing:readonly`, `organization:readonly`, `users:readonly` (or no scopes, so the user's full permissions apply)
 
 **3. Integration** (Admin → Integrations → + Integrations → **Client Application**):
 - *Application URL*:
   ```
   https://skndkprivat.github.io/genesys-traffic-widget/?clientId=<CLIENT-ID>&gcHostOrigin={{gcHostOrigin}}&gcTargetEnv={{gcTargetEnv}}&gcLangTag={{gcLangTag}}
   ```
-- *Application Type*: `standalone` (vises under *Apps*-menuen) eller `widget`, hvis den skal ligge i agentens sidepanel
+- *Application Type*: `standalone` (shown under the *Apps* menu) or `widget` if it should sit in the agent's side panel
 - *Iframe Sandbox Options*: `allow-scripts,allow-same-origin,allow-forms,allow-modals,allow-downloads,allow-popups`
-- *Group Filtering*: begræns evt. til en gruppe, fx supervisorer
-- Slå integrationen **Active**
+- *Group Filtering*: optionally limit it to a group, e.g. supervisors
+- Set the integration to **Active**
 
-**4. Rettigheder** for brugerne: `analytics:conversationDetail:view` og `routing:queue:view`.
+**4. Permissions** for the users: `analytics:conversationDetail:view` and `routing:queue:view`.
 
-Hver org skal have sin egen OAuth-klient og integration. Koden og hostingen er den samme for alle.
+Each org needs its own OAuth client and integration. The code and the hosting are the same for all of them.
 
-### URL-parametre
+### URL parameters
 
-| Parameter | Betydning |
+| Parameter | Meaning |
 |---|---|
-| `clientId` | OAuth client ID i den aktuelle org (påkrævet) |
-| `gcHostOrigin` / `pcEnvironment` / `region` | Bestemmer regionen. Kun kendte Genesys-domæner accepteres |
-| `gcLangTag` / `lang` | Sprog: da, en, fr, es eller nl (ellers engelsk) |
-| `theme` | `light` eller `dark` (ellers følges styresystemet) |
-| `demo` | Viser demodata uden login, til afprøvning uden for Genesys |
+| `clientId` | OAuth client ID in the current org (required) |
+| `gcHostOrigin` / `pcEnvironment` / `region` | Sets the region. Only known Genesys domains are accepted |
+| `gcLangTag` / `lang` | Language: da, en, fr, es or nl (otherwise English) |
+| `theme` | `light` or `dark` (otherwise follows the operating system) |
+| `demo` | Shows demo data without sign-in, for trying it out outside Genesys |
 
-## Lokal afprøvning
+## Trying it locally
 
 ```bash
 npm start
 ```
 
-Åbn `http://localhost:8080/?demo`. Login kan kun testes rigtigt fra en HTTPS-host via integrationen. Vil du teste uden for Genesys, kan du åbne `https://skndkprivat.github.io/genesys-traffic-widget/?clientId=…&region=mypurecloud.de` direkte i browseren.
+Open `http://localhost:8080/?demo`. Sign-in can only really be tested from an HTTPS host through the integration. To test outside Genesys, open `https://skndkprivat.github.io/genesys-traffic-widget/?clientId=…&region=mypurecloud.de` directly in the browser.
 
 ```bash
 npm test
 ```
 
-Skærmbilledet i README'en (`docs/traffic-widget.png`) kan tages igen efter ændringer:
+The README screenshots (`docs/traffic-widget.png` in English and `docs/traffic-widget-da.png` in Danish) can be retaken after changes:
 
 ```bash
 npm run screenshot
 ```
 
-Scriptet (`tools/screenshot.mjs`) starter sin egen lille server og en lokal Edge eller Chrome i headless-tilstand. Begge layouts vises side om side, midt i afspilningen af demodata. Kan browseren ikke findes, sætter du `BROWSER=<sti til msedge/chrome>`. `LANG_TAG=en` giver et engelsk billede.
+The script (`tools/screenshot.mjs`) starts its own small server and a local Edge or Chrome in headless mode. Both layouts are shown side by side, part-way through the demo data replay. If the browser cannot be found, set `BROWSER=<path to msedge/chrome>`. `LANG_TAG=en` takes the English picture only.
 
-## Forskelle fra Traffic i Flow-diagram-tool
+## Differences from Traffic in Flow-diagram-tool
 
-- Ingen kundeliste eller `.env`. Org'en og regionen kommer fra Genesys.
-- Ingen server. Det er rene statiske filer.
-- Logger automatisk ind og henter den valgte periode (standard: seneste 7 dage), når widget'en åbnes.
-- Org'ens navn og brugerens navn står i værktøjslinjen.
-- Når man er logget ind via Genesys, vises kun *Hent live* og periode. Demo-data, indlæsning/indsætning af JSON og API-hjælpen vises kun i `?demo`-tilstand.
-- Smalle paneler (under 560 px, fx agentens sidepanel) får et kompakt layout: højst 2 flow-kolonner, 8 bokse pr. kolonne som standard, mindre tekst, køerne helt ude til højre og tællerne inde i boksen, når der ikke er plads under den.
+- No customer list or `.env`. The org and the region come from Genesys.
+- No server. It is plain static files.
+- Signs in automatically and fetches the selected period (default: last 7 days) when the widget opens.
+- The org name and the user's name are shown in the toolbar.
+- When signed in through Genesys, only *Live data* and the period are shown. Demo data, loading/pasting JSON and the API help are only shown in `?demo` mode.
+- Narrow panels (under 560 px, e.g. the agent's side panel) get a compact layout: at most 2 flow columns, 8 boxes per column by default, smaller text, the queues against the right edge and the counters inside the box when there is no room under it.
 
-Afspilning, diagram, filtre, graf, klik-grid og CSV-eksport er de samme. `js/traffic.js` er en kopi, hvor kun live-login-delen er ændret. Rettelser i parse-logikken skal derfor laves begge steder, indtil de evt. flyttes til en fælles pakke.
+Replay, diagram, filters, graph, click-through grid and CSV export are the same. `js/traffic.js` is a copy where only the live sign-in part has been changed, so fixes to the parsing logic have to be made in both places until they may be moved to a shared package.
