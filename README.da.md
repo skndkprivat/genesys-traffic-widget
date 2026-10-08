@@ -2,7 +2,7 @@
 
 [English](README.md) · **Dansk**
 
-Traffic-visningen fra Flow-diagram-tool som en selvstændig widget, der kører **inde i Genesys Cloud**.
+En widget, der viser opkaldstrafik og kører **inde i Genesys Cloud**.
 Opkald afspilles som prikker, der løber *indgangspunkt → Architect-flow → kø*. Blå betyder, at nogen tog opkaldet, og rød betyder, at det endte uden samtale.
 
 ![Traffic-widget'en med demodata: bredt layout til venstre, smalt sidepanel til højre](docs/traffic-widget-da.png)
@@ -77,13 +77,9 @@ npm run screenshot
 
 Scriptet (`tools/screenshot.mjs`) starter sin egen lille server og en lokal Edge eller Chrome i headless-tilstand. Begge layouts vises side om side, midt i afspilningen af demodata. Kan browseren ikke findes, sætter du `BROWSER=<sti til msedge/chrome>`. `LANG_TAG=da` tager kun det danske billede.
 
-## Forskelle fra Traffic i Flow-diagram-tool
+## Sådan opfører widget'en sig
 
-- Ingen kundeliste eller `.env`. Org'en og regionen kommer fra Genesys.
-- Ingen server. Det er rene statiske filer.
 - Logger automatisk ind og henter den valgte periode (standard: seneste 7 dage), når widget'en åbnes.
 - Org'ens navn og brugerens navn står i værktøjslinjen.
 - Når man er logget ind via Genesys, vises kun *Hent live* og periode. Demo-data, indlæsning/indsætning af JSON og API-hjælpen vises kun i `?demo`-tilstand.
 - Smalle paneler (under 560 px, fx agentens sidepanel) får et kompakt layout: højst 2 flow-kolonner, 8 bokse pr. kolonne som standard, mindre tekst, køerne helt ude til højre og tællerne inde i boksen, når der ikke er plads under den.
-
-Afspilning, diagram, filtre, graf, klik-grid og CSV-eksport er de samme. `js/traffic.js` er en kopi, hvor kun live-login-delen er ændret. Rettelser i parse-logikken skal derfor laves begge steder, indtil de evt. flyttes til en fælles pakke.

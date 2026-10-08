@@ -2,7 +2,7 @@
 
 **English** · [Dansk](README.da.md)
 
-The Traffic view from Flow-diagram-tool as a standalone widget that runs **inside Genesys Cloud**.
+A widget that shows call traffic and runs **inside Genesys Cloud**.
 Calls are replayed as dots flowing *entry point → Architect flow → queue*. Blue means somebody took the call, and red means it ended without a conversation.
 
 ![The Traffic widget with demo data: wide layout on the left, narrow side panel on the right](docs/traffic-widget.png)
@@ -77,13 +77,9 @@ npm run screenshot
 
 The script (`tools/screenshot.mjs`) starts its own small server and a local Edge or Chrome in headless mode. Both layouts are shown side by side, part-way through the demo data replay. If the browser cannot be found, set `BROWSER=<path to msedge/chrome>`. `LANG_TAG=en` takes the English picture only.
 
-## Differences from Traffic in Flow-diagram-tool
+## How the widget behaves
 
-- No customer list or `.env`. The org and the region come from Genesys.
-- No server. It is plain static files.
 - Signs in automatically and fetches the selected period (default: last 7 days) when the widget opens.
 - The org name and the user's name are shown in the toolbar.
 - When signed in through Genesys, only *Live data* and the period are shown. Demo data, loading/pasting JSON and the API help are only shown in `?demo` mode.
 - Narrow panels (under 560 px, e.g. the agent's side panel) get a compact layout: at most 2 flow columns, 8 boxes per column by default, smaller text, the queues against the right edge and the counters inside the box when there is no room under it.
-
-Replay, diagram, filters, graph, click-through grid and CSV export are the same. `js/traffic.js` is a copy where only the live sign-in part has been changed, so fixes to the parsing logic have to be made in both places until they may be moved to a shared package.
