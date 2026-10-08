@@ -1,4 +1,4 @@
-// Texts for the Traffic widget (taken from Flow-diagram-tool), one object per language.
+// Texts for the Traffic widget, one object per language.
 export const I18N = {
  "da": {
   "locale": "da-DK",
