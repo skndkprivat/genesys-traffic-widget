@@ -67,7 +67,10 @@ button:disabled { opacity: .55; cursor: default; }
 .tr-narrow .tr-row { gap: 6px; }
 .tr-narrow .tr-bar select, .tr-narrow .btn { padding: 4px 8px; font-size: 11.5px; }
 .tr-narrow .tr-row + .tr-row { column-gap: 4px; }   /* room for ? and the theme button next to the load buttons */
-.tr-narrow [data-tr="help"], .tr-narrow [data-tr="theme"] { padding: 4px 6px; }
+.tr-narrow [data-tr="help"] { padding: 4px 6px; }
+/* Fixed width, so the button does not grow when ☾ turns into the wider ☀ */
+[data-tr="theme"] { width: 32px; padding-left: 0; padding-right: 0; }
+.tr-narrow [data-tr="theme"] { width: 24px; padding: 4px 0; }
 .tr-narrow .tr-bar input[type=range] { order: 10; flex-basis: 100%; }
 .tr-narrow .tr-clock { order: 11; min-width: 0; font-size: 11.5px; }
 .tr-narrow .tr-who { order: 12; flex-basis: 100%; max-width: none; }

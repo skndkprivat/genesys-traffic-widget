@@ -7,6 +7,10 @@ Calls are replayed as dots flowing *entry point → Architect flow → queue*. B
 
 ![The Traffic widget with demo data: wide layout on the left, narrow side panel on the right](docs/traffic-widget.png)
 
+The same in the dark theme:
+
+![The Traffic widget in the dark theme](docs/traffic-widget-dark.png)
+
 The widget signs in with **the Genesys org it is shown in** and **the user who is signed in**. There is no server, no client secret and no customer list. The token only has the user's own permissions.
 
 ## How sign-in works
@@ -69,13 +73,13 @@ Open `http://localhost:8080/?demo`. Sign-in can only really be tested from an HT
 npm test
 ```
 
-The README screenshots (`docs/traffic-widget.png` in English and `docs/traffic-widget-da.png` in Danish) can be retaken after changes:
+The README screenshots (`docs/traffic-widget.png` in English and `docs/traffic-widget-da.png` in Danish, each with a `-dark` version) can be retaken after changes:
 
 ```bash
 npm run screenshot
 ```
 
-The script (`tools/screenshot.mjs`) starts its own small server and a local Edge or Chrome in headless mode. Both layouts are shown side by side, part-way through the demo data replay. If the browser cannot be found, set `BROWSER=<path to msedge/chrome>`. `LANG_TAG=en` takes the English picture only.
+The script (`tools/screenshot.mjs`) starts its own small server and a local Edge or Chrome in headless mode. Both layouts are shown side by side, part-way through the demo data replay. If the browser cannot be found, set `BROWSER=<path to msedge/chrome>`. `LANG_TAG=en` takes the English pictures only, and `THEME=light` or `THEME=dark` one theme only.
 
 ## How the widget behaves
 

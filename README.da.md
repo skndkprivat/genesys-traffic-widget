@@ -7,6 +7,10 @@ Opkald afspilles som prikker, der løber *indgangspunkt → Architect-flow → k
 
 ![Traffic-widget'en med demodata: bredt layout til venstre, smalt sidepanel til højre](docs/traffic-widget-da.png)
 
+Det samme i mørkt tema:
+
+![Traffic-widget'en i mørkt tema](docs/traffic-widget-da-dark.png)
+
 Widget'en logger ind med **den Genesys-org, den bliver vist i**, og med **den bruger, der er logget ind**. Der er ingen server, ingen client secret og ingen kundeliste. Tokenet har kun brugerens egne rettigheder.
 
 ## Sådan virker login
@@ -69,13 +73,13 @@ npm start
 npm test
 ```
 
-Skærmbillederne i README'erne (`docs/traffic-widget.png` på engelsk og `docs/traffic-widget-da.png` på dansk) kan tages igen efter ændringer:
+Skærmbillederne i README'erne (`docs/traffic-widget.png` på engelsk og `docs/traffic-widget-da.png` på dansk, hver med en `-dark`-udgave) kan tages igen efter ændringer:
 
 ```bash
 npm run screenshot
 ```
 
-Scriptet (`tools/screenshot.mjs`) starter sin egen lille server og en lokal Edge eller Chrome i headless-tilstand. Begge layouts vises side om side, midt i afspilningen af demodata. Kan browseren ikke findes, sætter du `BROWSER=<sti til msedge/chrome>`. `LANG_TAG=da` tager kun det danske billede.
+Scriptet (`tools/screenshot.mjs`) starter sin egen lille server og en lokal Edge eller Chrome i headless-tilstand. Begge layouts vises side om side, midt i afspilningen af demodata. Kan browseren ikke findes, sætter du `BROWSER=<sti til msedge/chrome>`. `LANG_TAG=da` tager kun de danske billeder, og `THEME=light` eller `THEME=dark` kun ét tema.
 
 ## Sådan opfører widget'en sig
 
