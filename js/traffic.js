@@ -202,7 +202,7 @@ const median = a => { const s = [...a].sort((x, y) => x - y); return s[Math.floo
 
 // Busiest `cap` names per column get their own node; everything else is merged into one
 // "Other" node, so every conversation is still animated and counted.
-function buildModel(convs, cap) {
+function buildModel(convs, cap, maxCols = MAX_FLOW_COLS) {
   const nodes = new Map();
   const other = {};
   const add = (kind, all) => {
@@ -232,7 +232,7 @@ function buildModel(convs, cap) {
   const inboundStage = Math.max(-1, ...rows.filter(r => r.type === 'INBOUNDCALL').map(r => r.stage));
   rows.forEach(r => { if (r.type === 'INQUEUECALL' && r.stage <= inboundStage) r.stage = inboundStage + 1; });
   const stages = [...new Set(rows.map(r => r.stage))].sort((x, y) => x - y);
-  rows.forEach(r => { r.col = Math.min(MAX_FLOW_COLS - 1, stages.indexOf(r.stage)); });
+  rows.forEach(r => { r.col = Math.min(maxCols - 1, stages.indexOf(r.stage)); });
   const hasOther = flowNames.length > keep.length;
   const flowCols = Math.max(1, ...rows.map(r => r.col + 1));
   const byCol = Array.from({ length: flowCols }, () => []);
@@ -354,6 +354,12 @@ export function initTraffic(root, i18n, toast, opts = {}) {
   const nodeName = n => (n.special ? i18n('trafficDirectTitle') : n.other ? `${i18n('trafficOther_' + n.kind)} (${n.count})` : n.name);
   let model = null, t0 = 0, t1 = 0, simT = 0, playing = false, lastTs = 0, nextIdx = 0;
   let dots = [], totals = { blue: 0, red: 0 }, dpr = 1, W = 0, H = 0;
+  // Narrow (e.g. the agent side panel): at most two flow columns, smaller text, queues against the right edge
+  const NARROW = 560;
+  let narrow = false;
+  const maxCols = () => (narrow ? 2 : MAX_FLOW_COLS);
+  const fontPx = () => (narrow ? 10 : 12);
+  if (root.clientWidth && root.clientWidth < NARROW) q('nodes').value = '8';   // fewer boxes per column in a side panel
 
   const msPerWeek = () => +q('speed').value;
   const simPerRealMs = () => (t1 - t0) / msPerWeek();
@@ -363,7 +369,11 @@ export function initTraffic(root, i18n, toast, opts = {}) {
     W = stage.clientWidth; H = stage.clientHeight;
     canvas.width = W * dpr; canvas.height = H * dpr;
     canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    const was = narrow;
+    narrow = root.clientWidth < NARROW;
+    root.classList.toggle('tr-narrow', narrow);
     measureEntries();
+    if (model && was !== narrow) rebuild();
   }
   new ResizeObserver(resize).observe(stage);
 
@@ -371,18 +381,27 @@ export function initTraffic(root, i18n, toast, opts = {}) {
   let entryW = 0;
   function measureEntries() {
     if (!model) return;
-    ctx.save(); ctx.font = '12px system-ui, sans-serif';
+    ctx.save(); ctx.font = fontPx() + 'px system-ui, sans-serif';
     entryW = Math.max(0, ...[...model.nodes.values()].filter(n => n.kind === 'did').map(n => ctx.measureText(nodeName(n)).width));
     ctx.restore();
   }
-  const entryX = () => Math.min(W * 0.27, Math.max(W * 0.09, entryW + 16));
+  const entryX = () => (narrow ? Math.min(W * 0.24, Math.max(40, entryW + 6)) : Math.min(W * 0.27, Math.max(W * 0.09, entryW + 16)));
+  // Narrow: queue boxes hug the right edge; flow columns share the room between the entry badges and the queues
+  const narrowCols = () => {
+    const qW = Math.min(120, W * 0.28), qx = W - qW / 2 - 2;
+    return { qW, qx, left: entryX() + 30, right: qx - qW / 2 - 10 };
+  };
   function pos(node, side) {
     const fc = model ? model.flowCols : 1;
-    const dx = entryX(), qx = W * 0.86, span = qx - dx;
-    const x = node.kind === 'did' ? dx : node.kind === 'queue' ? qx : dx + (node.col + 1) / (fc + 1) * span;
+    const nc = narrow ? narrowCols() : null;
+    const dx = entryX(), qx = narrow ? nc.qx : W * 0.86, span = qx - dx;
+    const x = node.kind === 'did' ? dx : node.kind === 'queue' ? qx
+      : narrow ? nc.left + (node.col + 0.5) / fc * (nc.right - nc.left) : dx + (node.col + 1) / (fc + 1) * span;
     const ys = (node.ci + 0.5) / node.cn;
     const y = 36 + ys * (H - 36 - 70);
-    const w = node.kind === 'did' ? 70 : Math.max(60, Math.min(130, node.kind === 'flow' ? span / (fc + 1) * 0.84 : W * 0.17));
+    const w = node.kind === 'did' ? 70
+      : narrow ? (node.kind === 'queue' ? nc.qW : Math.max(40, Math.min(130, (nc.right - nc.left) / fc - 10)))
+      : Math.max(60, Math.min(130, node.kind === 'flow' ? span / (fc + 1) * 0.84 : W * 0.17));
     const h = Math.max(12, Math.min(26, (H - 106) / node.cn - 5));
     return { x: side === 'in' ? x - w / 2 : side === 'out' ? x + w / 2 : x, y, w, h };
   }
@@ -448,7 +467,7 @@ export function initTraffic(root, i18n, toast, opts = {}) {
     const hasFlow = convs.some(c => c.flows.length);
     q('flowOnly').checked = hasFlow && convs.some(c => !c.flows.length);   // only useful when there are direct calls to hide
     q('flowWrap').hidden = !convs.some(c => !c.flows.length) || !hasFlow;
-    model = buildModel(viewConvs(), +q('nodes').value);
+    model = buildModel(viewConvs(), +q('nodes').value, maxCols());
     buildDidList(); q('didWrap').hidden = false; measureEntries();
     t0 = convs[0].start; t1 = convs[convs.length - 1].start + 1;
     empty.style.display = 'none';
@@ -700,10 +719,19 @@ export function initTraffic(root, i18n, toast, opts = {}) {
     ctx.clearRect(0, 0, W, H);
     if (!model) return;
     const ink = css('--ink', '#222'), faint = css('--ink-faint', '#888'), border = css('--border', '#ccc'), bg = css('--bg-2', '#fff');
-    ctx.font = '12px system-ui, sans-serif'; ctx.textBaseline = 'middle';
+    const fs = fontPx();
+    ctx.font = fs + 'px system-ui, sans-serif'; ctx.textBaseline = 'middle';
 
-    ctx.fillStyle = faint; ctx.textAlign = 'center';
-    ctx.fillText(i18n('trafficHead_did'), Math.max(60, entryX() - entryW / 2), 14); ctx.fillText(i18n('trafficHead_flow'), (entryX() + W * 0.86) / 2, 14); ctx.fillText(i18n('trafficHead_queue'), W * 0.86, 14);
+    ctx.fillStyle = faint;
+    if (narrow) {
+      const nc = narrowCols();
+      ctx.textAlign = 'left'; ctx.fillText(i18n('trafficHead_did'), 2, 14);
+      ctx.textAlign = 'center'; ctx.fillText(i18n('trafficHead_flow'), (nc.left + nc.right) / 2, 14);
+      ctx.textAlign = 'right'; ctx.fillText(i18n('trafficHead_queue'), W - 2, 14);
+    } else {
+      ctx.textAlign = 'center';
+      ctx.fillText(i18n('trafficHead_did'), Math.max(60, entryX() - entryW / 2), 14); ctx.fillText(i18n('trafficHead_flow'), (entryX() + W * 0.86) / 2, 14); ctx.fillText(i18n('trafficHead_queue'), W * 0.86, 14);
+    }
 
     // Edges used by the loaded conversations
     ctx.strokeStyle = css('--ink-dim', '#999'); ctx.lineWidth = 1.2; ctx.globalAlpha = 0.45;
@@ -723,7 +751,7 @@ export function initTraffic(root, i18n, toast, opts = {}) {
       const p = pos(n, 'c');
       // Counters go under the box only if there is room before the next box; otherwise to the right of it
       const dense = p.h < 20 || (H - 106) / n.cn - p.h < 17;
-      ctx.font = (dense ? 10 : 12) + 'px system-ui, sans-serif';
+      ctx.font = (dense ? 10 : fs) + 'px system-ui, sans-serif';
       if (n.kind === 'did') {
         ctx.fillStyle = faint; ctx.textAlign = 'right'; {
           const label = nodeName(n), maxW = p.x - 8;
@@ -740,22 +768,38 @@ export function initTraffic(root, i18n, toast, opts = {}) {
       }
       ctx.fillStyle = bg; ctx.strokeStyle = n.kind === 'flow' ? typeInfo(n.type).color : '#d99a2b'; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.roundRect(p.x - p.w / 2, p.y - p.h / 2, p.w, p.h, 6); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = ink; ctx.textAlign = 'center'; { const label = nodeName(n); ctx.fillText(label.length > 22 ? label.slice(0, 21) + '…' : label, p.x, p.y); }
+      // Narrow and no room under the box: the counters go inside it, at the right end
+      const parts = [[n.blue, BLUE], [n.red, RED]].filter(x => x[0]);
+      const inside = narrow && dense && parts.length > 0;
+      const partW = v => 9 + ctx.measureText(String(v)).width + 4;
+      const insideW = inside ? parts.reduce((a, [v]) => a + partW(v), 0) + 2 : 0;
+      ctx.fillStyle = ink; ctx.textAlign = 'center'; {
+        let label = nodeName(n); if (label.length > 22) label = label.slice(0, 21) + '…';
+        const room = p.w - 8 - insideW;
+        if (narrow) while (label.length > 1 && ctx.measureText(label).width > room) label = label.slice(0, -2) + '…';
+        ctx.fillText(label, p.x - insideW / 2, p.y);
+      }
       if (n.kind === 'flow' && n.runs) {                         // green: how many times the flow was run
         const t = String(n.runs); ctx.font = 'bold 10px system-ui, sans-serif';
         const bw = ctx.measureText(t).width + 8, bx = p.x + p.w / 2 - bw + 3, by = p.y - p.h / 2 - 6;
         ctx.fillStyle = bg; ctx.strokeStyle = GREEN; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.roundRect(bx, by, bw, 12, 6); ctx.fill(); ctx.stroke();
         ctx.fillStyle = GREEN; ctx.textAlign = 'center'; ctx.fillText(t, bx + bw / 2, by + 6.5);
-        ctx.font = (dense ? 10 : 12) + 'px system-ui, sans-serif';
+        ctx.font = (dense ? 10 : fs) + 'px system-ui, sans-serif';
       }
-      if (n.blue || n.red) {
-        const parts = [[n.blue, BLUE], [n.red, RED]].filter(x => x[0]);
+      if (inside) {
+        let x = p.x + p.w / 2 - insideW;
+        parts.forEach(([v, col]) => {
+          ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x + 3, p.y, 2.5, 0, 7); ctx.fill();
+          ctx.fillStyle = ink; ctx.textAlign = 'left'; ctx.fillText(String(v), x + 8, p.y); x += partW(v);
+        });
+      } else if (parts.length) {
         // Roomy layout: counters under the box. Dense layout: to the right of the box.
-        let x = dense ? p.x + p.w / 2 + 6 : p.x - (parts.length * 38) / 2;
+        const step = narrow ? 30 : 38;
+        let x = dense ? p.x + p.w / 2 + 6 : p.x - (parts.length * step) / 2;
         const cy = dense ? p.y : p.y + p.h / 2 + 9;
         parts.forEach(([v, col]) => {
           ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x + 4, cy, 3, 0, 7); ctx.fill();
-          ctx.fillStyle = ink; ctx.textAlign = 'left'; ctx.fillText(String(v), x + 11, cy); x += 38;
+          ctx.fillStyle = ink; ctx.textAlign = 'left'; ctx.fillText(String(v), x + 11, cy); x += step;
         });
       }
     });
@@ -855,8 +899,10 @@ export function initTraffic(root, i18n, toast, opts = {}) {
   });
   q('pasteClear').addEventListener('click', () => { pasted.length = 0; pasteBox().value = ''; pasteInfo().textContent = ''; });
   q('file').addEventListener('change', e => { if (e.target.files.length) loadFiles(e.target.files); e.target.value = ''; });
-  root.addEventListener('dragover', e => e.preventDefault());
-  root.addEventListener('drop', e => { e.preventDefault(); if (e.dataTransfer.files.length) loadFiles(e.dataTransfer.files); });
+  if (!opts.live) {
+    root.addEventListener('dragover', e => e.preventDefault());
+    root.addEventListener('drop', e => { e.preventDefault(); if (e.dataTransfer.files.length) loadFiles(e.dataTransfer.files); });
+  }
 
   // ── Live data (signed in through the Genesys org the widget runs in) ──
   const panel = q('livePanel');
@@ -906,6 +952,11 @@ export function initTraffic(root, i18n, toast, opts = {}) {
 
   q('live').addEventListener('click', () => { if (gc.getSession()) doFetch(); else login(); });
 
+  // Signed in through Genesys: the data comes from the org, so demo data, JSON files and the API help are left out.
+  // Without sign-in (?demo) it is the other way round.
+  [q('demo'), root.querySelector('.tr-upload'), q('paste'), q('help')].forEach(el => { el.hidden = !!opts.live; });
+  [q('live'), periodSel].forEach(el => { el.hidden = !opts.live; });
+
   showWho();
   if (opts.message) show(opts.message);
   if (gc.getSession() && (takeAutoFetch() || opts.autoFetch)) doFetch();
@@ -936,7 +987,7 @@ export function initTraffic(root, i18n, toast, opts = {}) {
     const list = viewConvs();
     if (!list.length) toast(i18n('trafficNoRows'), 'err');
     const f = (simT - t0) / (t1 - t0);
-    model = buildModel(list, +q('nodes').value);
+    model = buildModel(list, +q('nodes').value, maxCols());
     measureEntries(); setupBuckets(); seek(f);
   }
   q('flowOnly').addEventListener('change', () => { rebuild(); });

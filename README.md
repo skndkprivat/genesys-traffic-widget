@@ -65,5 +65,7 @@ npm test
 - Ingen server. Det er rene statiske filer.
 - Logger automatisk ind og henter den valgte periode (standard: seneste 7 dage), når widget'en åbnes.
 - Org'ens navn og brugerens navn står i værktøjslinjen.
+- Når man er logget ind via Genesys, vises kun *Hent live* og periode. Demo-data, indlæsning/indsætning af JSON og API-hjælpen vises kun i `?demo`-tilstand.
+- Smalle paneler (under 560 px, fx agentens sidepanel) får et kompakt layout: højst 2 flow-kolonner, 8 bokse pr. kolonne som standard, mindre tekst, køerne helt ude til højre og tællerne inde i boksen, når der ikke er plads under den.
 
 Afspilning, diagram, filtre, graf, klik-grid og CSV-eksport er de samme. `js/traffic.js` er en kopi, hvor kun live-login-delen er ændret. Rettelser i parse-logikken skal derfor laves begge steder, indtil de evt. flyttes til en fælles pakke.

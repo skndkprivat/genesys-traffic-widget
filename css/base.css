@@ -55,3 +55,25 @@ button:disabled { opacity: .55; cursor: default; }
 .notice code, .notice pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12px; }
 .notice pre { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; white-space: pre-wrap; word-break: break-all; }
 .notice ul { padding-left: 18px; }
+
+/* Legend wraps whole items instead of breaking the words inside them */
+.tr-legend { flex-wrap: wrap; gap: 4px 16px !important; }
+.tr-legend > span { white-space: nowrap; }
+.tr-ms-panel { max-width: calc(100vw - 24px); }
+[hidden] { display: none !important; }
+
+/* Narrow widget (e.g. the agent side panel) — the class is set from the measured width */
+.tr-narrow { padding: 8px; gap: 8px; }
+.tr-narrow .tr-row { gap: 6px; }
+.tr-narrow .tr-bar select, .tr-narrow .btn { padding: 4px 8px; font-size: 11.5px; }
+.tr-narrow .tr-bar input[type=range] { order: 10; flex-basis: 100%; }
+.tr-narrow .tr-clock { order: 11; min-width: 0; font-size: 11.5px; }
+.tr-narrow .tr-who { order: 12; flex-basis: 100%; max-width: none; }
+.tr-narrow .tr-spacer { display: none; }
+.tr-narrow .tr-stage { min-height: 300px; }
+.tr-narrow .tr-chart-wrap { height: 100px; }
+.tr-narrow .tr-chart-legend { margin-left: 0; }
+.tr-narrow .tr-legend { font-size: 11.5px; gap: 2px 12px !important; }
+.tr-narrow .tr-modal { padding: 6px; }
+.tr-narrow .tr-card-tools input[type=search] { min-width: 0; flex: 1; }
+@media (max-width: 560px) { body { padding: 0; } .traffic { border-radius: 0; border-width: 0; } }

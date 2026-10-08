@@ -75,7 +75,7 @@ async function boot() {
     return;
   }
   if (!gc.getSession() && !message) message = t('trafficLogin');
-  initTraffic(root, t, toast, { autoFetch: true, message });
+  initTraffic(root, t, toast, { live: true, autoFetch: true, message });
 }
 
 boot().catch(e => notice(`<p>${esc(t('trafficLiveFailed'))}: ${esc(e.message)}</p><button class="btn primary" onclick="location.reload()">${esc(t('retry'))}</button>`));
