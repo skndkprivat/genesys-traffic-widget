@@ -19,4 +19,12 @@ createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': TYPES[extname(path)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
     res.end(body);
   } catch { res.writeHead(404); res.end('Not found'); }
-}).listen(PORT, () => console.log(`Traffic widget on http://localhost:${PORT}/?demo`));
+}).listen(PORT, () => {
+  const base = `http://localhost:${PORT}/`;
+  console.log(`Traffic widget, demo data:  ${base}?demo`);
+  // Live data: CLIENT_ID and REGION give a ready-made URL. The OAuth client needs the redirect URI below.
+  const { CLIENT_ID, REGION } = process.env;
+  const live = CLIENT_ID && REGION ? `${base}?clientId=${encodeURIComponent(CLIENT_ID)}&region=${encodeURIComponent(REGION)}` : base;
+  console.log(`Traffic widget, live data:  ${live}${CLIENT_ID && REGION ? '' : '  (enter client ID and region there, or set CLIENT_ID and REGION)'}`);
+  console.log(`OAuth redirect URI:         ${base}`);
+});

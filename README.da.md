@@ -57,7 +57,7 @@ Hver org skal have sin egen OAuth-klient og integration. Koden og hostingen er d
 |---|---|
 | `clientId` | OAuth client ID i den aktuelle org (påkrævet) |
 | `gcHostOrigin` / `pcEnvironment` / `region` | Bestemmer regionen. Kun kendte Genesys-domæner accepteres |
-| `gcLangTag` / `lang` | Sprog: da, en, fr, es eller nl (ellers engelsk) |
+| `gcLangTag` / `lang` | Sprog: da, en, fr, es eller nl (ellers browserens sprog eller engelsk). Sprogvælgeren i værktøjslinjen overstyrer det og huskes pr. browser |
 | `theme` | `light` eller `dark` (ellers følges styresystemet). Knappen ☾/☀ i værktøjslinjen overstyrer det og huskes pr. browser |
 | `demo` | Viser demodata uden login, til afprøvning uden for Genesys |
 
@@ -67,7 +67,10 @@ Hver org skal have sin egen OAuth-klient og integration. Koden og hostingen er d
 npm start
 ```
 
-Åbn `http://localhost:8080/?demo`. Login kan kun testes rigtigt fra en HTTPS-host via integrationen. Vil du teste uden for Genesys, kan du åbne `https://skndkprivat.github.io/genesys-traffic-widget/?clientId=…&region=mypurecloud.de` direkte i browseren.
+- **Demodata:** åbn `http://localhost:8080/?demo`.
+- **Live data:** åbn `http://localhost:8080/` og skriv OAuth client ID og region i formularen, eller start med `CLIENT_ID=… REGION=mypurecloud.de npm start` for at få en færdig URL. OAuth-klienten skal også have `http://localhost:8080/` som redirect URI.
+
+`PORT=8090 npm start` bruger en anden port, og så følger redirect URI'en med. Indlejring i selve Genesys Cloud kræver stadig en HTTPS-host, fx GitHub Pages.
 
 ```bash
 npm test

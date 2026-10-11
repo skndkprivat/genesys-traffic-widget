@@ -266,6 +266,8 @@ function pathOf(model, c) {
 // ── View ─────────────────────────────────────────────────────────────────────
 import * as gc from './genesys-auth.js';
 
+const LANG_NAMES = { da: 'Dansk', en: 'English', fr: 'Français', es: 'Español', nl: 'Nederlands' };
+
 export function initTraffic(root, i18n, toast, opts = {}) {
   root.innerHTML = `
     <div class="tr-bar"><div class="tr-row">
@@ -280,6 +282,9 @@ export function initTraffic(root, i18n, toast, opts = {}) {
       </select>
       <select data-tr="nodes" title="${i18n('trafficNodes')}">
         ${[8, 15, 25, 40].map(n => `<option value="${n}" ${n === 15 ? 'selected' : ''}>${i18n('trafficNodes')} ${n}</option>`).join('')}
+      </select>
+      <select data-tr="lang" title="${i18n('trafficLang')}" aria-label="${i18n('trafficLang')}" ${opts.langs ? '' : 'hidden'}>
+        ${(opts.langs || []).map(l => `<option value="${l}" ${l === opts.lang ? 'selected' : ''}>${LANG_NAMES[l] || l}</option>`).join('')}
       </select>
       <label class="tr-chk" data-tr="flowWrap" hidden><input type="checkbox" data-tr="flowOnly"><span data-tr="flowOnlyTxt"></span></label>
       <div class="tr-ms" data-tr="didWrap" hidden>
@@ -858,6 +863,9 @@ export function initTraffic(root, i18n, toast, opts = {}) {
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', themeBtn);
   themeBtn();
 
+  // Language switch: main.js changes the language behind i18n, then every text is set again in place.
+  q('lang').addEventListener('change', e => { opts.onLang?.(e.target.value); relabel(); themeBtn(); });
+
   q('play').addEventListener('click', () => { if (!model) return; if (simT >= t1) seek(0); play(!playing); });
   q('restart').addEventListener('click', () => { if (model) { seek(0); play(true); } });
   q('seek').addEventListener('input', e => { seek(+e.target.value / 1000); });
@@ -1143,13 +1151,13 @@ export function initTraffic(root, i18n, toast, opts = {}) {
     setOpts('period', v => i18n('trafficP_' + v));
     q('speed').title = i18n('trafficSpeed'); q('nodes').title = i18n('trafficNodes'); q('period').title = i18n('trafficPeriod');
     q('live').textContent = i18n('trafficLive'); q('demo').textContent = i18n('trafficDemo');
-    q('help').title = i18n('trafficHelpTitle');
+    q('help').title = i18n('trafficHelpTitle'); q('lang').title = i18n('trafficLang'); q('lang').setAttribute('aria-label', i18n('trafficLang'));
     root.querySelector('.tr-upload').firstChild.textContent = i18n('trafficLoad');
     q('helpPanel').innerHTML = i18n('trafficHelpBody');
     q('paste').textContent = i18n('trafficPaste'); fillBucketSelect();
     q('flowOnlyTxt').textContent = i18n('trafficFlowOnly');
     q('didSearch').placeholder = i18n('trafficSearch'); q('didAll').textContent = i18n('trafficDidSelectAll'); q('didNone').textContent = i18n('trafficDidClear');
-    if (didCounts.length) { updateDidLabel(); renderDidList(); }
+    updateDidLabel(); if (didCounts.length) renderDidList();
     q('pasteAdd').textContent = i18n('trafficPasteAdd'); q('pasteClear').textContent = i18n('trafficPasteClear');
     q('pastePanel').firstElementChild.textContent = i18n('trafficPasteHint');
     root.querySelector('.tr-empty').textContent = i18n('trafficNoData');

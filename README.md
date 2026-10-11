@@ -57,7 +57,7 @@ Each org needs its own OAuth client and integration. The code and the hosting ar
 |---|---|
 | `clientId` | OAuth client ID in the current org (required) |
 | `gcHostOrigin` / `pcEnvironment` / `region` | Sets the region. Only known Genesys domains are accepted |
-| `gcLangTag` / `lang` | Language: da, en, fr, es or nl (otherwise English) |
+| `gcLangTag` / `lang` | Language: da, en, fr, es or nl (otherwise the browser language, or English). The language picker in the toolbar overrides it and is remembered per browser |
 | `theme` | `light` or `dark` (otherwise follows the operating system). The ☾/☀ button in the toolbar overrides it and is remembered per browser |
 | `demo` | Shows demo data without sign-in, for trying it out outside Genesys |
 
@@ -67,7 +67,10 @@ Each org needs its own OAuth client and integration. The code and the hosting ar
 npm start
 ```
 
-Open `http://localhost:8080/?demo`. Sign-in can only really be tested from an HTTPS host through the integration. To test outside Genesys, open `https://skndkprivat.github.io/genesys-traffic-widget/?clientId=…&region=mypurecloud.de` directly in the browser.
+- **Demo data:** open `http://localhost:8080/?demo`.
+- **Live data:** open `http://localhost:8080/` and enter the OAuth client ID and region in the form, or start with `CLIENT_ID=… REGION=mypurecloud.de npm start` to get a ready-made URL. The OAuth client needs `http://localhost:8080/` as a redirect URI as well.
+
+`PORT=8090 npm start` uses another port; the redirect URI then changes with it. Embedding in Genesys Cloud itself still needs an HTTPS host, e.g. GitHub Pages.
 
 ```bash
 npm test
